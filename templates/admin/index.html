@@ -1,0 +1,46 @@
+    <div>
+        <h1>UWC Dilijan Library Administration Panel</h1>
+
+        <strong>Logged-in As:</strong> <em>{{ username }}</em> <a href="/logout">Logout</a>
+
+
+<!-- TODO: THIS IS HORRIBLE. Use CSS! -->
+<br />
+<br />
+
+        <h2>User Settings</h2>
+        <h3 class="form-change-password-heading">Change Password</h3>
+        {% for alert in change_password_alerts %}
+        {% if alert[0] == 'danger' %}
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            {% elif alert[0] == 'success' %}
+            <div class="alert alert-success alert-dismissible" role="alert">
+                {% endif %}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                {{ alert[1] }}
+            </div>
+            {% endfor %}
+
+            <div id="passwordAlerts"></div>
+            <form class="form-change-password" method="post" action="change-password">
+                <label for="inputPassword" class="sr-only">Current Password</label>
+                <input type="password" name="password" id="inputPassword" class="form-control"
+                       placeholder="Old Password"
+                       required>
+
+                <label for="newPassword" class="sr-only">New Password</label>
+                <input type="password" name="new_password" id="newPassword" class="form-control"
+                       placeholder="New Password"
+                       required>
+
+
+                <label for="confirmNewPassword" class="sr-only">New Password (again)</label>
+                <input type="password" name="confirm_new_password" id="confirmNewPassword"
+                       class="form-control"
+                       placeholder="New Password (again)"
+                       required>
+
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Change Password</button>
+            </form>
+        </div>

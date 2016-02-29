@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Sign in | UWC Dilijan Library</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/static/styles/bootstrap-3.3.6.min.css">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/signin.css') }}">
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      {% if alerts %}
+      {% for alert in alerts %}
+      <div class="alert alert-danger" role="alert">{{ alert }}</div>
+      {% endfor %}
+      {% endif %}
+
+      <form class="form-signin" method="post">
+        <h2 class="form-signin-heading">Please sign in</h2>
+
+
+        <div class="input-group">
+        <input type="text" name="username" class="form-control" placeholder="Username" aria-describedby="basic-addon2">
+        <span class="input-group-addon" id="basic-addon2">@uwcdilijan.org</span>
+        </div>
+
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <!--
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="remember" value="remember-me"> Remember me
+          </label>
+        </div>
+        -->
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+
+    </div> <!-- /container -->
+
+    <!-- jQuery -->
+    <script src="/static/scripts/jquery-2.2.0.min.js"></script>
+
+     <!-- Latest compiled and minified JavaScript -->
+     <script src="/static/scripts/bootstrap-3.3.6.min.js"></script>
+  </body>
+</html>

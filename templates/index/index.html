@@ -1,0 +1,60 @@
+<div>
+    <h1>UWC Dilijan Library</h1>
+
+    <h2>Working Hours</h2>
+    <strong>Monday-Friday:</strong> 08:15-21:30<br />
+    <strong>Saturday-Sunday:</strong> 10:00-17:00
+
+    <h2>News</h2>
+    <div class="row">
+        {% for new in news %}
+        <div class="col-md-4 new"><div class="new-date"><span class="label label-primary">{{ new.created }}</span></div>
+            <div class="new-title">
+                <span title="{{ new.title }}"><a href="/news/{{ new.id }}">{{ new.title }}</a></span></div></div>
+        {% endfor %}
+    </div>
+
+    <h2>Rules</h2>
+    <ul>
+        <li>No food, chewing gum, or drinks (except water) in the Library.</li>
+        <li>Maximum 7 books per person can be checked out.</li>
+        <li>Loan period for books is 14 days.</li>
+        <li>Noise and inappropriate behavior are not acceptable.</li>
+        <li>Librarians should be informed about activities going on in the Library ahead of time.</li>
+    </ul>
+
+    <br />
+    <br />
+    <br />
+
+    <div class="row">
+    <div class="col-md-3">
+        <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="http://www.questiaschool.com">Questia School</a>
+        </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="http://search.ebscohost.com">EBSCOhost</a>
+        </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="http://online.sagepub.com/">SAGE Journals</a>
+        </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="https://uwcdilijan.follettdestiny.com">Follett Destiny</a>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>

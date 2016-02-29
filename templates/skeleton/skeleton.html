@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Website of the UWC Dilijan">
+    <meta name="author" content="UWC Dilijan">
+    <title>{{ title }} - UWC Dilijan Library</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="/static/styles/bootstrap-3.3.6.min.css">
+
+    <style>body {margin-top: 51px;}</style>
+
+    <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    {% for style in styles %}
+    <link rel="stylesheet" type="text/css" href="{{ style|safe }}">
+    {% endfor %}
+
+    <!-- jQuery -->
+    <script src="/static/scripts/jquery-2.2.0.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="/static/scripts/bootstrap-3.3.6.min.js"></script>
+
+    <!-- TODO: Host it yourself! -->
+    <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+
+    {% for script in scripts %}
+    <script src="{{ script|safe }}"></script>
+    {% endfor %}
+
+    <!-- Optional theme
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    -->
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/"><img alt="UWC Dilijan Library" src="/static/uwc-dilijan-logo.png"></a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li
+                    {% if current == "home" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/">Home</a></li>
+                    <li
+                    {% if current == "news" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/news">News</a></li>
+
+                    <li class="dropdown {% if current == 'about/mission' or current == 'about/contact' %}{{ 'active' }}{% endif %}">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About Us<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                        <li
+                        {% if current == "about/mission" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/about/mission">UWCD Mission</a></li>
+                        <li
+                        {% if current == "about/contact" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/about/contact">Contact Us</a></li>
+                        </ul>
+                    </li>
+
+                    {% if username %}
+                    <li
+                    {% if current == "admin" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/admin">Administration
+                    Panel</a></li>
+                    {% endif %}
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+
+    <div id="content" class="container">
+        {{ content|safe }}
+        <hr/>
+        © <span id="year"></span> <a href="http://www.uwcdilijan.org">UWC Dilijan</a> | <a
+            href="/static/acknowledgements.html">Acknowledgements</a>
+    </div>
+<script>$("#year").html(new Date().getFullYear());</script>
+</body>
+</html>

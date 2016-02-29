@@ -1,0 +1,32 @@
+.list-group {
+  max-width: 660px;
+}
+
+.row {
+  max-width: 660px;
+}
+
+.input {
+   width: 330px;
+   }
+
+
+.form-add-news {
+max-width: 660px;
+}
+
+
+.news {
+max-width: 660px;
+}
+
+.form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+

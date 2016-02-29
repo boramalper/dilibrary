@@ -1,0 +1,50 @@
+.monospace {
+  font-family: monospace;
+}
+
+.list-group {
+  max-width: 330px;
+}
+
+.row {
+  max-width: 660px;
+  margin-bottom: 10px;
+}
+
+.input-group{
+  width: 100%;
+}
+
+.input-group-addon {
+  text-align: left;
+  font-weight: bold;
+}
+
+
+#wishbox-container {
+   max-width: 660px;
+}
+
+.section {
+    border-bottom: 20px;
+}
+
+.new {
+    margin-bottom: 1.1em;
+}
+
+.new-date {
+    margin-bottom: 0.6em;
+}
+
+.new-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bottom {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 1em;
+}

@@ -1,0 +1,103 @@
+<div>
+<h1>UWC Dilijan Library News</h1>
+{% if new %}
+    <h2>{{ new.title }}</h2>
+    <i>{{ new.created }}</i>
+
+    <!-- TODO: this is not nice -->
+    <br/>
+    <br/>
+    <div id="body">
+        <p>{{ new.body|safe }}</p>
+    </div>
+{% else %}
+{% if news %}
+    <h2>News</h2>
+    <ul class="list-group">
+        {% for new in news %}
+        <li class="list-group-item"><span class="label label-primary">{{ new.created }}</span> <a
+                href="/news/{{ new.id }}">{{
+            new.title }}</a>{% if logged_in %}<span class="badge">
+
+            <form action="delete-news" method="post">
+            <button type="submit" name="id" value="{{ new.id }}" class="btn-link"><span class="glyphicon glyphicon-trash" style="color: white;" aria-hidden="true"></span></button>
+            </form>
+            </span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+<br />
+{% endif %}
+
+{% if logged_in %}
+<h2>Add a News</h2>
+
+{% for alert in add_new_alerts %}
+{% if alert[0] == 'danger' %}
+<div class="alert alert-danger alert-dismissible" role="alert">
+    {% elif alert[0] == 'success' %}
+    <div class="alert alert-success alert-dismissible" role="alert">
+        {% endif %}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+        {{ alert[1] }}
+    </div>
+    {% endfor %}
+</div>
+  <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+
+    <form method="post" action="add-news" class="form-add-news">
+        <label for="newstitle" class="sr-only">Title</label>
+        <input type="text" class="form-control" placeholder="Title" id="newstitle" name="title"
+               required>
+
+        <label for="newsbody" class="sr-only">Body</label>
+        <textarea class="form-control" id="newsbody" name="body"></textarea>
+
+        <!--
+        <br />
+
+        <strong></strong>
+        <div id="image-input">
+            <strong>Cover Image:</strong>
+            <input type="file" name="cover" id="cover" accept="image/*">
+            <br />
+            <strong>More Photos</strong>
+            <input type="file" name="images" id="images" accept="image/*" multiple>
+        </div>
+
+        <br />
+        <br />
+        -->
+
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
+    </form>
+    {% endif %}
+    {% endif %}
+
+<script>
+    function add_news() {
+        var formData = new FormData()
+
+        formData.append("title", $("#newstitle")[0])
+        formData.append("body", $("#newsbody")[0])
+
+        /*
+        if (document.getElementById("cover").files > 0) {
+            formData.append("cover", document.getElementById("cover").files[0])
+        }
+
+        if (document.getElementById("images").files != 0) {
+            formData.append("images", document.getElementById("images").files)
+        }
+
+        formData.append("ablob", new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/xml"}))
+        */
+
+        var request = new XMLHttpRequest()
+        request.open("POST", "/add-news")
+        request.send(formData)
+    }
+
+</script>
