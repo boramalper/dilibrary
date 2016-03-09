@@ -45,59 +45,35 @@
     </div>
     {% endfor %}
 </div>
-  <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 
-    <form method="post" action="add-news" class="form-add-news">
+    <script>
+        function sendForm() {
+            document.getElementById("image_form").submit();
+            document.getElementById("image_input").value = '';
+        }
+
+        function addImage() {
+            var src = document.getElementById('form_target').contentWindow.document.body.innerHTML;
+            console.log("src", src);
+            tinyMCE.execCommand('mceInsertContent', false, '<img style="max-width: 600px;" src="' + src + '"/>');
+        }
+    </script>
+
+    <iframe id="form_target" name="form_target" style="display:none" onload="addImage();"></iframe>
+    <form id="image_form" action="upload-image" target="form_target" method="post" enctype="multipart/form-data"
+          style="width:0px;height:0px;overflow:hidden" autocomplete="off">
+	    <input id="image_input" name="image" type="file" onchange="sendForm();">
+    </form>
+
+    <form method="post" action="add-news" class="form-add-news" autocomplete="off">
         <label for="newstitle" class="sr-only">Title</label>
         <input type="text" class="form-control" placeholder="Title" id="newstitle" name="title"
                required>
 
         <label for="newsbody" class="sr-only">Body</label>
-        <textarea class="form-control" id="newsbody" name="body"></textarea>
-
-        <!--
-        <br />
-
-        <strong></strong>
-        <div id="image-input">
-            <strong>Cover Image:</strong>
-            <input type="file" name="cover" id="cover" accept="image/*">
-            <br />
-            <strong>More Photos</strong>
-            <input type="file" name="images" id="images" accept="image/*" multiple>
-        </div>
-
-        <br />
-        <br />
-        -->
+        <textarea class="form-control" id="newsbody" name="body" autocomplete="off"></textarea>
 
         <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
     </form>
     {% endif %}
     {% endif %}
-
-<script>
-    function add_news() {
-        var formData = new FormData()
-
-        formData.append("title", $("#newstitle")[0])
-        formData.append("body", $("#newsbody")[0])
-
-        /*
-        if (document.getElementById("cover").files > 0) {
-            formData.append("cover", document.getElementById("cover").files[0])
-        }
-
-        if (document.getElementById("images").files != 0) {
-            formData.append("images", document.getElementById("images").files)
-        }
-
-        formData.append("ablob", new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/xml"}))
-        */
-
-        var request = new XMLHttpRequest()
-        request.open("POST", "/add-news")
-        request.send(formData)
-    }
-
-</script>

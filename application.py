@@ -14,12 +14,15 @@ limitations under the License.
 """
 
 import os
-from datetime import datetime, time as dttime
+from datetime import datetime
 import time
 from urllib.parse import quote
 from collections import namedtuple
+import hashlib
+import binascii
+from uuid import uuid4
 
-from flask import Flask, request, render_template, session, redirect, abort
+from flask import Flask, request, render_template, session, redirect, abort, url_for
 from htmlmin.minify import html_minify
 from passlib.hash import bcrypt
 import sqlite3
@@ -27,11 +30,6 @@ import sqlite3
 app = Flask(__name__)
 
 News = namedtuple("News", ["id", "title", "body", "created"])
-
-time_slice = namedtuple("TimeSlice", ["begin", "end"])
-librarian = namedtuple("Librarian", ["name", "surname", "e_mail"])
-tt_entry = namedtuple("TimetableEntry", ["isoweekday", "shift", "librarians"])
-interrupt_t = namedtuple("Interrupt", ["isoweekday", "shift", "explanation"])
 
 db_conn = None
 
@@ -132,8 +130,6 @@ def add_news():
     if "username" not in session:
         abort(401)
 
-    print("REQ", request.form)
-
     title = request.form["title"]
     body = request.form["body"]
     created = datetime.today()
@@ -216,6 +212,7 @@ def admin():
             return res
 
     else:
+        print("admin", request.form)
         if "username" not in session:
             username = request.form["username"].lower()
             password = request.form["password"]
@@ -242,6 +239,37 @@ def about_mission():
     return my_render("about/mission")
 
 
+def sha512(stream):
+    engine = hashlib.sha512()
+    stream.seek(0)
+
+    if hasattr(stream, "getvalue"):
+        value = stream.getvalue()
+    elif hasattr(stream, "read"):
+        value = stream.read()
+    else:
+        raise Exception("Couldn't read file stream for SHA512")
+
+    engine.update(value)
+    return binascii.hexlify(engine.digest()).upper().decode("ascii")
+
+
+@app.route("/upload-image", methods=["POST"])
+def upload_image():
+    if "username" not in session:
+        abort(401)
+
+    image = request.files["image"]
+    if image:
+        filename = str(uuid4())
+
+        image.save("static/images/" + filename)
+
+        return "/static/images/" + filename
+    else:
+        return abort(500)
+
+
 @app.route("/about/contact")
 def about_contact():
     return my_render("about/contact")
@@ -266,7 +294,7 @@ if __name__ == "__main__":
     app.jinja_env.globals.update(percent_encode=quote)
 
     try:
-        if __debug__:
+        if not __debug__:
             print("Running in debugging mode!")
             app.run(host='127.0.0.1', debug=True)
         else:
