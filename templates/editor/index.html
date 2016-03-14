@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="/static/styles/bootstrap-3.3.6.min.css">
+
+    <!-- jQuery -->
+    <script src="/static/scripts/jquery-2.2.0.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="/static/scripts/bootstrap-3.3.6.min.js"></script>
+
+    <!-- TODO: Host it yourself! -->
+    <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+</head>
+<body>
+<script>
+    function sendForm() {
+        document.getElementById("image_form").submit();
+        document.getElementById("image_input").value = '';
+    }
+
+    function addImage() {
+        var src = document.getElementById('form_target').contentWindow.document.body.innerHTML;
+        console.log("src", src);
+        tinyMCE.execCommand('mceInsertContent', false, '<a href="' + src + '"><img style="max-width: 600px;" src="' + src + '"/></a>');
+    }
+
+    function uuid4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+                    return v.toString(16);
+                });
+    }
+
+    window.onload = function() {
+        var uuid = "{{ uuid }}";
+
+        document.getElementById('news_uuid_img').value = uuid;
+        document.getElementById('news_uuid').value = uuid;
+
+        document.getElementById('newstitle').value = "{{ title | safe }}";
+
+        tinymce.init({
+            selector: 'textarea',
+            plugins: "autosave contextmenu image",
+            toolbar: "undo redo | bold italic underline | subscript superscript | alignleft aligncenter alignright | bullist numlist | outdent indent | image | fullscreen",
+            menubar: false,
+            statusbar: false,
+            convert_urls: false,
+            height: 700,
+
+            browser_spellcheck: true,
+
+            block_formats: 'Header 1=h1;Header 2=h2',
+
+            image_description: true,
+
+            contextmenu: "bold italic underline | subscript superscript",
+
+            file_browser_callback: function(field_name, url, type, win) {
+                if (type == 'image') {
+                    $('#image_form input').click();
+                }
+            }
+        });
+
+        tinyMCE.activeEditor.setContent("{{ body | safe }}");
+    };
+
+    function sendmaform() {
+        var news_id = {{ id }};
+
+
+        jQuery.ajax({
+            url: "/news" + (news_id ? ('/' + news_id) : ''),
+            type: "PUT",
+            data: {"title": document.getElementById("newstitle").value,
+                   "body" : tinyMCE.activeEditor.getContent(),
+                   "news_uuid": document.getElementById('news_uuid_img').value
+            },
+            success: function(data, textStatus, jqXHR){
+                window.onbeforeunload = null;
+                window.top.location.href = data;
+            }
+        });
+    }
+</script>
+
+<iframe id="form_target" name="form_target" style="display:none" onload="addImage();"></iframe>
+<form id="image_form" action="/upload-image" target="form_target" method="post" enctype="multipart/form-data"
+      style="width:0px;height:0px;overflow:hidden" autocomplete="off">
+    <input id="image_input" name="image" type="file" onchange="sendForm();">
+    <input id="news_uuid_img" name="news_uuid" type="text" hidden>
+</form>
+
+<form class="form-add-news" autocomplete="off">
+    <input id="news_id" name="news_id" type="text" hidden>
+    <input id="news_uuid" name="news_uuid" type="text" hidden>
+
+    <label for="newstitle" class="sr-only">Title</label>
+    <input type="text" class="form-control" placeholder="Title" id="newstitle" name="title"
+           required style="margin-bottom: 10px;">
+
+    <label for="newsbody" class="sr-only">Body</label>
+    <textarea class="form-control" id="newsbody" name="body"></textarea>
+</form>
+<button class="btn btn-lg btn-primary btn-block" onclick="sendmaform()" style="margin-top: 10px;">Add</button>
+
+</body>
+</html>

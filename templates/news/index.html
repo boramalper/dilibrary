@@ -1,79 +1,45 @@
 <div>
 <h1>UWC Dilijan Library News</h1>
-{% if new %}
-    <h2>{{ new.title }}</h2>
-    <i>{{ new.created }}</i>
-
-    <!-- TODO: this is not nice -->
-    <br/>
-    <br/>
-    <div id="body">
-        <p>{{ new.body|safe }}</p>
-    </div>
-{% else %}
-{% if news %}
     <h2>News</h2>
+    {% if news %}
     <ul class="list-group">
         {% for new in news %}
         <li class="list-group-item"><span class="label label-primary">{{ new.created }}</span> <a
                 href="/news/{{ new.id }}">{{
             new.title }}</a>{% if logged_in %}<span class="badge">
 
-            <form action="delete-news" method="post">
-            <button type="submit" name="id" value="{{ new.id }}" class="btn-link"><span class="glyphicon glyphicon-trash" style="color: white;" aria-hidden="true"></span></button>
-            </form>
+            <button onclick="delete_news_item({{ new.id }})" class="btn-link"><span class="glyphicon glyphicon-trash" style="color: white;" aria-hidden="true"></span></button>
             </span>{% endif %}
         </li>
         {% endfor %}
     </ul>
-
-<br />
-{% endif %}
-
-{% if logged_in %}
-<h2>Add a News</h2>
-
-{% for alert in add_new_alerts %}
-{% if alert[0] == 'danger' %}
-<div class="alert alert-danger alert-dismissible" role="alert">
-    {% elif alert[0] == 'success' %}
-    <div class="alert alert-success alert-dismissible" role="alert">
-        {% endif %}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                aria-hidden="true">&times;</span></button>
-        {{ alert[1] }}
-    </div>
-    {% endfor %}
-</div>
+    {% else %}
+    <i>There is nothing new under the sun.</i>
+    {% endif %}
 
     <script>
-        function sendForm() {
-            document.getElementById("image_form").submit();
-            document.getElementById("image_input").value = '';
-        }
+        function delete_news_item(id) {
+            if (id == "")
+                return;
 
-        function addImage() {
-            var src = document.getElementById('form_target').contentWindow.document.body.innerHTML;
-            console.log("src", src);
-            tinyMCE.execCommand('mceInsertContent', false, '<img style="max-width: 600px;" src="' + src + '"/>');
+             console.log("helo");
+
+            jQuery.ajax({
+                url: "/news/" + id,
+                type: "DELETE",
+                data: {},
+                success: function(data, textStatus, jqXHR){
+                    console.log("helal be");
+                    window.onbeforeunload = null;
+                    window.location.href = "/news";
+                }
+            });
+
+            console.log("bb");
         }
     </script>
-
-    <iframe id="form_target" name="form_target" style="display:none" onload="addImage();"></iframe>
-    <form id="image_form" action="upload-image" target="form_target" method="post" enctype="multipart/form-data"
-          style="width:0px;height:0px;overflow:hidden" autocomplete="off">
-	    <input id="image_input" name="image" type="file" onchange="sendForm();">
-    </form>
-
-    <form method="post" action="add-news" class="form-add-news" autocomplete="off">
-        <label for="newstitle" class="sr-only">Title</label>
-        <input type="text" class="form-control" placeholder="Title" id="newstitle" name="title"
-               required>
-
-        <label for="newsbody" class="sr-only">Body</label>
-        <textarea class="form-control" id="newsbody" name="body" autocomplete="off"></textarea>
-
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Add</button>
-    </form>
-    {% endif %}
-    {% endif %}
+{% if logged_in %}
+<br />
+<h2>Add a News</h2>
+<iframe src="/editor" seamless='seamless' frameBorder="0" width="1140" height="850"></iframe>
+{% endif %}

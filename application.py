@@ -16,11 +16,11 @@ limitations under the License.
 import os
 from datetime import datetime
 import time
-from urllib.parse import quote
 from collections import namedtuple
 import hashlib
 import binascii
 from uuid import uuid4
+import shutil
 
 from flask import Flask, request, render_template, session, redirect, abort, url_for
 from htmlmin.minify import html_minify
@@ -33,7 +33,7 @@ News = namedtuple("News", ["id", "title", "body", "created"])
 
 db_conn = None
 
-if __debug__:
+if not __debug__:
     @app.after_request
     def minify(response):
         if response.content_type == "text/html; charset=utf-8":
@@ -47,7 +47,7 @@ def my_render(template, **kwargs):
     return render_template("skeleton/skeleton.html",
                            username=session["username"] if "username" in session else None,
                            current="home" if template == "index" else template,
-                           title="Home" if template == "index" else template.split("/")[-1].capitalize(),
+                           title="Home" if template == "index" else kwargs["title"] if "title" in kwargs else template.split("/")[-1].capitalize(),
                            content=render_template(template + "/index.html", **kwargs),
                            template=template,
                            scripts=list(filter(None, ["/static/scripts/{}/{}".format(template, scriptname)
@@ -66,11 +66,9 @@ def my_render(template, **kwargs):
                            if os.path.isdir("static/styles/" + template) else [])
 
 
-index_wishbox_alerts = []
 @app.route("/")
 def index():
     res = my_render("index", news=get_news(3))
-    index_wishbox_alerts.clear()
     return res
 
 
@@ -93,7 +91,7 @@ def logout():
 def get_news(amount=0, date_format="%d %b, %A", include_body=False):
     cur = db_conn.cursor()
 
-    cur.execute("SELECT id, title, created {} FROM news WHERE deleted = 0 ORDER BY created DESC{};"
+    cur.execute("SELECT id, title, created {} FROM news WHERE is_deleted = 0 ORDER BY created DESC{};"
                 .format(", body" if include_body else '',
                         " LIMIT {}".format(amount) if amount else "")
                 )
@@ -104,57 +102,74 @@ def get_news(amount=0, date_format="%d %b, %A", include_body=False):
                  time.strftime(date_format, time.strptime(rn[2], "%Y-%m-%d %H:%M:%S.%f"))) for rn in cur.fetchall()]
 
 
-news_add_news_alerts = []
-
-
 @app.route("/news")
-@app.route("/news/<news_id>")
-def news(news_id=None):
+def news():
+    res = my_render("news", news=get_news(), logged_in=True if "username" in session else False)
+    return res
+
+
+@app.route("/news/<int:news_id>", methods=["GET"])
+def news_id(news_id):
     cur = db_conn.cursor()
+    cur.execute("SELECT id, title, created, body FROM news WHERE id = ? AND is_deleted = 0;", (news_id,))
+    new = cur.fetchone()
+    cur.close()
 
-    if news_id:
-        cur.execute("SELECT id, title, created, body FROM news WHERE id=?;", (news_id,))
-        new = cur.fetchone()
-        new = News(new[0], new[1], new[3], sqldate_to_human(new[2][0:15]))  # 0:15 -> remove microseconds, and convert
+    if new is None:
+        return redirect("/news")
 
-        return my_render("news", new=new)
-    else:
-        res = my_render("news", news=get_news(), logged_in=True if "username" in session else False,
-                        add_new_alerts=news_add_news_alerts)
-        news_add_news_alerts.clear()
-        return res
+    new = News(new[0], new[1], new[3], sqldate_to_human(new[2][0:15]))  # 0:15 -> remove microseconds, and convert
+
+    return my_render("news_item", new=new, title=new.title, is_loggedin=True if "username" in session else False)
 
 
-@app.route("/add-news", methods=["POST"])
-def add_news():
-    if "username" not in session:
-        abort(401)
-
-    title = request.form["title"]
-    body = request.form["body"]
-    created = datetime.today()
-
-    cur = db_conn.cursor()
-    cur.execute("INSERT INTO news (title, body, created) VALUES (?, ?, ?);", (title, body, created))
-
-    db_conn.commit()
-
-    news_add_news_alerts.append(("success", "Successfully added!"))
-
-    return redirect("/news")
-
-
-@app.route("/delete-news", methods=["POST"])
-def delete_news():
+@app.route("/news", methods=["PUT"])
+def create_news_item():
     if "username" not in session:
         abort(401)
 
     cur = db_conn.cursor()
-    cur.execute("DELETE FROM news WHERE id=?;", (request.form["id"],))
+    cur.execute("INSERT INTO news (title, body, created, uuid) VALUES (?, ?, ?, ?);", (request.form["title"],
+                                                                                       request.form["body"],
+                                                                                       datetime.today(),
+                                                                                       request.form["news_uuid"]))
+
+    cur.execute("SELECT id FROM news WHERE is_deleted = 0 ORDER BY created DESC;")
+    news_id = cur.fetchone()[0]
+
+    cur.close()
     db_conn.commit()
 
-    news_add_news_alerts.append(("success", "Successfully deleted!"))
-    return redirect("/news")
+    return "/news/" + str(news_id)
+
+
+@app.route("/news/<int:news_id>", methods=["PUT"])
+def replace_news_item(news_id):
+    if "username" not in session:
+        abort(401)
+
+    cur = db_conn.cursor()
+    cur.execute("UPDATE news SET title = ?, body = ? WHERE id = ?;", (request.form["title"], request.form["body"], news_id))
+    cur.close()
+    db_conn.commit()
+
+    return "/news/" + str(news_id)
+
+
+@app.route("/news/<int:news_id>", methods=["DELETE"])
+def delete_news(news_id):
+    if "username" not in session:
+        abort(401)
+
+    cur = db_conn.cursor()
+    cur.execute("UPDATE news SET is_deleted = 1 WHERE id = ?", (news_id,))
+    cur.execute("SELECT uuid FROM news WHERE id = ?", (news_id,))
+    uuid = cur.fetchone()[0]
+    cur.close()
+    shutil.rmtree("static/news_assets/" + uuid, ignore_errors=True)
+    db_conn.commit()
+
+    return "okay"
 
 
 @app.route("/change-password", methods=["POST"])
@@ -182,7 +197,6 @@ def change_password():
 
 admin_login_alerts = []
 admin_change_password_alerts = []
-admin_interrupt_alerts = []
 
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -193,21 +207,12 @@ def admin():
             admin_login_alerts.clear()
             return res
         else:
-            cur = db_conn.cursor()
-
-            cur.execute(
-                "SELECT name, student_id, author, title, \"e-mail\", comments, id FROM wishes ORDER BY created DESC;")
-            wishes = cur.fetchall()
-
             res = my_render("admin",
                             change_password_alerts=admin_change_password_alerts,
-                            interrupt_alerts=admin_interrupt_alerts,
                             news=get_news(),
-                            wishes=wishes,
                             username=session["username"])
 
             admin_change_password_alerts.clear()
-            admin_interrupt_alerts.clear()
 
             return res
 
@@ -261,13 +266,40 @@ def upload_image():
 
     image = request.files["image"]
     if image:
-        filename = str(uuid4())
+        directory = request.form["news_uuid"]
+        path = os.path.join("static/news_assets", directory)
 
-        image.save("static/images/" + filename)
+        filename = str(uuid4()) + "." + image.filename.rsplit('.', 1)[1]
 
-        return "/static/images/" + filename
+        os.makedirs(path, exist_ok=True)
+        image.save(os.path.join(path, filename))
+
+        return "/static/news_assets/" + directory + "/" + filename
     else:
         return abort(500)
+
+
+@app.route("/editor/<int:news_id>")
+def editor_id(news_id):
+    cur = db_conn.cursor()
+    cur.execute("SELECT id, title, body, uuid FROM news WHERE id=? AND is_deleted=0;", (news_id,))
+    res = cur.fetchone()
+    cur.close()
+
+    if res is None:
+        return "no news found with id " + str(news_id)
+
+    id, title, body, uuid = res
+
+    title = title.replace('"', '\\"')
+    body = body.replace('"', '\\"').replace('\n', '\\n')
+
+    return render_template("editor/index.html", id=id, title=title, body=body, uuid=uuid)
+
+
+@app.route("/editor")
+def editor():
+    return render_template("editor/index.html", id=0, title='', body='', uuid=uuid4())
 
 
 @app.route("/about/contact")
@@ -291,7 +323,7 @@ def finalize():
 if __name__ == "__main__":
     initialize()
 
-    app.jinja_env.globals.update(percent_encode=quote)
+    # app.jinja_env.globals.update(percent_encode=quote)
 
     try:
         if not __debug__:

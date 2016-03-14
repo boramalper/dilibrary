@@ -1,0 +1,18 @@
+<div>
+<h1>UWC Dilijan Library News</h1>
+    <h2>{{ new.title }}</h2>
+    <i>{{ new.created }}</i>
+
+    <!-- TODO: this is not nice -->
+    <br/>
+    <br/>
+    <div id="body">
+        <p>{{ new.body|safe }}</p>
+    </div>
+
+    {% if is_loggedin %}
+    <hr>
+    <h2>Edit</h2>
+    <iframe src="/editor/{{ new.id }}" seamless='seamless' frameBorder="0" width="1140" height="850"></iframe>
+    {% endif %}
+</div>

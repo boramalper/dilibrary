@@ -57,13 +57,13 @@
                     <li
                     {% if current == "home" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/">Home</a></li>
                     <li
-                    {% if current == "news" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/news">News</a></li>
+                    {% if current == "news" or current == "news_item" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/news">News</a></li>
 
                     <li class="dropdown {% if current == 'about/mission' or current == 'about/contact' %}{{ 'active' }}{% endif %}">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About Us<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                         <li
-                        {% if current == "about/mission" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/about/mission">UWCD Mission</a></li>
+                        {% if current == "about/mission" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/about/mission">UWCD Library Mission</a></li>
                         <li
                         {% if current == "about/contact" %}{{ 'class=\"active\"'|safe }}{% endif %}><a href="/about/contact">Contact Us</a></li>
                         </ul>
