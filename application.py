@@ -22,7 +22,7 @@ import binascii
 from uuid import uuid4
 import shutil
 
-from flask import Flask, request, render_template, session, redirect, abort, url_for
+from flask import Flask, request, render_template, session, redirect, abort, make_response
 from htmlmin.minify import html_minify
 from passlib.hash import bcrypt
 import sqlite3
@@ -140,7 +140,10 @@ def create_news_item():
     cur.close()
     db_conn.commit()
 
-    return "/news/" + str(news_id)
+    res = make_response("/news/" + str(news_id))
+    res.mimetype = "text/plain"
+
+    return res
 
 
 @app.route("/news/<int:news_id>", methods=["PUT"])
@@ -153,7 +156,10 @@ def replace_news_item(news_id):
     cur.close()
     db_conn.commit()
 
-    return "/news/" + str(news_id)
+    res = make_response("/news/" + str(news_id))
+    res.mimetype = "text/plain"
+
+    return res
 
 
 @app.route("/news/<int:news_id>", methods=["DELETE"])
@@ -269,7 +275,9 @@ def upload_image():
         directory = request.form["news_uuid"]
         path = os.path.join("static/news_assets", directory)
 
-        filename = str(uuid4()) + "." + image.filename.rsplit('.', 1)[1]
+        filename = str(uuid4())
+        if "." in image.filename:
+            filename += "." + image.filename.rsplit('.', 1)[1]
 
         os.makedirs(path, exist_ok=True)
         image.save(os.path.join(path, filename))
@@ -326,7 +334,7 @@ if __name__ == "__main__":
     # app.jinja_env.globals.update(percent_encode=quote)
 
     try:
-        if not __debug__:
+        if __debug__:
             print("Running in debugging mode!")
             app.run(host='127.0.0.1', debug=True)
         else:

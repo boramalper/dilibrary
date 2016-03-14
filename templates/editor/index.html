@@ -23,7 +23,6 @@
 
     function addImage() {
         var src = document.getElementById('form_target').contentWindow.document.body.innerHTML;
-        console.log("src", src);
         tinyMCE.execCommand('mceInsertContent', false, '<a href="' + src + '"><img style="max-width: 600px;" src="' + src + '"/></a>');
     }
 
@@ -72,7 +71,6 @@
     function sendmaform() {
         var news_id = {{ id }};
 
-
         jQuery.ajax({
             url: "/news" + (news_id ? ('/' + news_id) : ''),
             type: "PUT",
@@ -82,6 +80,7 @@
             },
             success: function(data, textStatus, jqXHR){
                 window.onbeforeunload = null;
+                console.log("bence bu", data);
                 window.top.location.href = data;
             }
         });
